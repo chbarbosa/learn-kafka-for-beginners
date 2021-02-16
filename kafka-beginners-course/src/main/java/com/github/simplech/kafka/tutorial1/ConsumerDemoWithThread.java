@@ -28,14 +28,19 @@ public class ConsumerDemoWithThread {
 		String groupId = "my-sixth-application";
 		CountDownLatch latch = new CountDownLatch(1);
 
-		Runnable myConsumerRunnable = new ConsumerThread(bootstrapServers, groupId, "first_topic", latch);
+		Runnable myConsumerRunnable = new ConsumerRunnable(bootstrapServers, groupId, "first_topic", latch);
 
 		Thread myThread = new Thread(myConsumerRunnable);
 		myThread.start();
 
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			logger.info("Caught shutdown hook");
-			//TODO falta algo
+			((ConsumerRunnable) myConsumerRunnable).shutdown();
+			try {
+				latch.await();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}));
 
 		try {
@@ -46,14 +51,14 @@ public class ConsumerDemoWithThread {
 			logger.info("application is closing");
 		}
 	}
-	public class ConsumerThread implements Runnable {
+	public class ConsumerRunnable implements Runnable {
 
 		private CountDownLatch latch;
 		private KafkaConsumer<String, String> consumer;
-		Logger logger = LoggerFactory.getLogger(ConsumerThread.class.getName());
+		Logger logger = LoggerFactory.getLogger(ConsumerRunnable.class.getName());
 
 
-		public ConsumerThread(
+		public ConsumerRunnable(
 				String bootstrapServers,
 				String groupId,
 				String topic,
