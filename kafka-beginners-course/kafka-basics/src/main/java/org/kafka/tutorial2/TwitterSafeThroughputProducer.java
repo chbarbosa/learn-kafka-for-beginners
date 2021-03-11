@@ -1,4 +1,4 @@
-package com.github.simplech.kafka.tutorial2;
+package org.kafka.tutorial2;
 
 import java.util.List;
 import java.util.Properties;

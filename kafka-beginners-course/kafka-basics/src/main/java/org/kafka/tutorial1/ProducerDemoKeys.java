@@ -1,6 +1,7 @@
-package com.github.simplech.kafka.tutorial1;
+package org.kafka.tutorial1;
 
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -11,9 +12,9 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ProducerDemoWithCallback {
-	public static void main(String[] args) {
-		final Logger logger = LoggerFactory.getLogger(ProducerDemoWithCallback.class);
+public class ProducerDemoKeys {
+	public static void main(String[] args) throws InterruptedException, ExecutionException {
+		final Logger logger = LoggerFactory.getLogger(ProducerDemoKeys.class);
 		// create Producer properties
 		Properties properties = new Properties();
 		//properties.setProperty("boostrap.servers", "127.0.0.1:9092");
@@ -25,9 +26,11 @@ public class ProducerDemoWithCallback {
 		KafkaProducer<String, String> producer = new KafkaProducer<String, String>(properties);
 
 		//create produce record
+		String key = "id_#0";
 		ProducerRecord<String, String> record =
-				new ProducerRecord<String, String>("first_topic", "Hello world");
+				new ProducerRecord<String, String>("first_topic", key, "Hello world");
 
+		logger.info("key: " + key); // with key, the data is send always to the same partition
 		// send data - asynchronous
 		producer.send(record, new Callback() {
 
@@ -40,7 +43,7 @@ public class ProducerDemoWithCallback {
 				}
 
 			}
-		});
+		}).get(); // make it synchronous - don't do it in production
 
 		// flush data
 		producer.flush();
